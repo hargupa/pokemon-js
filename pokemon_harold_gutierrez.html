@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pokemon</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+    <!--JS-->
+    <script>
+
+        let URL = 'https://pokeapi.co/api/v2/pokemon/?offset=';
+        let headers = new Headers();
+        headers.append("Content-type","application/json",{"Accept": "application/json"});
+
+            class ApiCliente{
+                constructor(url,numoffset){
+                    this.url = url;
+                    this.numoffset = numoffset;
+                    if (this.numoffset==-1){
+                        return this.get(this.url);
+                    }else{
+                        return this.get(this.url+this.numoffset);
+                    }
+                    
+
+                }
+            
+                get(url){
+                    let valor;
+                    let configuracion = {
+                        method:"GET",
+                        headers:headers
+                    }
+                    let promise = fetch(url,configuracion).then((response)=>{
+                        return response.json();
+                    })
+
+                    return  promise.then((successMessage)=>{
+                        let resultados;
+                        let data=[];
+                        let i=0;
+                        if (this.numoffset!=-1){
+                            let PokedLib = new Pokedex();    
+                            resultados = successMessage;
+                            PokedLib.totalPokemon = resultados.count;
+                            PokedLib.paginaActual = localStorage.numpagina;
+                            data=resultados.results;
+                            for (i=0;i<=data.length-1;i++){
+                                PokedLib.pokemon[i]=data[i]["name"];
+                                //PokemonDatos.nombre[i]=data[i]["name"]; 
+                                PokedLib.UrlPokemon[i]=data[i]["url"]; 
+                            }
+                            PokedLib.pintarEstructura();    
+                        }else{
+                            let PokemonDetalle = new PokemonApi();
+                            resultados = successMessage;
+                            data=resultados.results;
+                            PokemonDetalle.nombre = resultados.name;
+                            PokemonDetalle.peso = resultados.weight;
+                            PokemonDetalle.altura = resultados.height;
+                            PokemonDetalle.urlimagen = resultados.sprites.back_default;
+                            PokemonDetalle.ulrimagenshine = resultados.sprites.front_shiny;
+                            PokemonDetalle.baseExperiencia = resultados.base_experience;
+                            PokemonDetalle.pintarEstructuraDetalle(PokemonDetalle.urlimagen);
+
+
+                        }    
+                    });
+
+                }
+
+ 
+            }    
+
+            class Pokedex{
+                constructor(pokemon,paginaActual,totalPokemon,UrlPokemon){
+                    this.pokemon = [];
+                    this.paginaActual = paginaActual;
+                    this.totalPokemon = totalPokemon;
+                    this.UrlPokemon = [];
+                
+                }
+                pintarEstructura(){
+                    let strhtml='';
+                    let i,pagina;
+                    strhtml = '<div><a href="#" class="myButton" onclick="AntPagina();">Anterior</a>Pagina: '+this.paginaActual+'<a href="#" class="myButton" onclick="SigPagina();">Siguiente</a></div><br>';
+                    strhtml = strhtml +  '<div><table class="blueTable ">';
+                    strhtml = strhtml + '<tr>';
+                    strhtml = strhtml + '<th class="fila-tabla">Nombre</th>';
+                    strhtml = strhtml + '<th class="fila-tabla">Acciones</th>';
+                    strhtml = strhtml + '</tr>';
+                    for(i=0;i<=this.pokemon.length-1;i++){
+                        strhtml = strhtml + '<tr class="fila-tabla"><td>' + this.pokemon[i] + '</td><td><a href="#" class="myButton2" onclick="DetallePokemon('+"'"+ this.UrlPokemon[i] +"'"+')" >Elegir</a></td></tr>';
+                    }
+                    strhtml = strhtml + '</tr></table></div>';
+                    strhtml = strhtml +  '<div class="div-derecho">'; 
+                    strhtml = strhtml +  '<div class="div-arriba" id="DetallePokemon"><table class="blueTable " style="width:200px;">'; 
+                    strhtml = strhtml + '<tr>';
+                    strhtml = strhtml + '<th class="fila-tabla">Detalle Pokemon</th>';
+                    strhtml = strhtml + '</tr></table></div>'; 
+                    strhtml = strhtml +  '<div class="div-abajo" id="DetallePokemon2"><table class="blueTable " style="width:200px;">'; 
+                    strhtml = strhtml + '<tr>';
+                    strhtml = strhtml + '<th class="fila-tabla">Detalle Pokemon</th>';
+                    strhtml = strhtml + '</tr></table></div></div>'; 
+                    strhtml = strhtml + '<div class="boton-batalla"><a href="#" class="myButton3" onclick="Batallar();" >Enfrentar</a></div>';
+                   
+                    strhtml = strhtml +  '<div class="tabla-victorias" id="victorias"><table class="blueTable ">';
+                    strhtml = strhtml + '<tr>';
+                    strhtml = strhtml + '<th class="fila-tabla">Nombre</th>';
+                    strhtml = strhtml + '<th class="fila-tabla">Victorias</th>';
+                    strhtml = strhtml + '</tr></table><div>';
+                    document.getElementById("form").innerHTML= strhtml;
+                    mostrarFormularios();
+                }
+            }
+
+
+        class Pokemon{
+            constructor(nombre,urlDetalle){
+                this.nombre = [];
+                this.urlDetalle = [];
+            }
+
+        }
+
+        class PokemonApi{
+            construct(urlimagen,peso,altura,urlDePokemo,baseExperiencia,ulrimagenshine,nombre){
+                this.urlimagen = urlimagen;
+                this.peso = peso;
+                this.altura = altura;
+                this.urlDePokemo = urlDePokemo;
+                this.ulrimagenshine = ulrimagenshine;
+                this.nombre = nombre;
+            }
+            
+            getPokemonAtPage(numPagina){
+                
+            }
+
+            getPokemonByUrl(urlDePokemo){
+                let ObtenerPokemon = new ApiCliente(URL,localStorage.offsett);
+            }
+
+            pintarEstructuraDetalle(urlimagen){
+                let strhtml='';
+                strhtml = strhtml +  '<table class="blueTable" style="width:200px;">'; 
+                strhtml = strhtml + '<tr><th class="fila-tabla">Detalle Pokemon</th></tr>';
+                strhtml = strhtml + '</tr>';
+                strhtml = strhtml + '<tr class="fila-tabla"><td><img src="' + this.urlimagen + '" class="img-pokemon"></td></tr>';
+                //strhtml = strhtml + '<tr class="fila-tabla"><td>Peso: ' + this.peso + '</td></tr>';
+                //strhtml = strhtml + '<tr class="fila-tabla"><td>Altura: ' + this.altura + '</td></tr>';
+                strhtml = strhtml + '<tr class="fila-tabla"><td>Base Experiencia: ' + this.baseExperiencia + '</td></tr>';
+                strhtml = strhtml + '</tr></table>';    
+                if (localStorage.pokemon1!=urlimagen && localStorage.pokemon2!=urlimagen){
+                    if(localStorage.pokemon1=='' ){
+                        localStorage.pokemon1=urlimagen;
+                        localStorage.imgshine1=this.ulrimagenshine;
+                        localStorage.nombrepokemonbase1=this.baseExperiencia;
+                        localStorage.nombrepokemon1=this.nombre;
+                        localStorage.pesopokemon1=this.peso;
+                        localStorage.alturapokemon1=this.altura;
+                        strhtml = strhtml +  '<div style="text-align:center;"><a href="#" class="myButton" onclick="eliminarDetalle1();"><span style="font-size:30px;"class="material-icons">delete</span></a></div>';
+                        document.getElementById("DetallePokemon").innerHTML= strhtml;
+                    }else{
+                        if(localStorage.pokemon2=='' ){
+                            localStorage.pokemon2=urlimagen;
+                            localStorage.nombrepokemonbase2=this.baseExperiencia;
+                            localStorage.imgshine2=this.ulrimagenshine;
+                            localStorage.nombrepokemon2=this.nombre;
+                            localStorage.pesopokemon2=this.peso;
+                            localStorage.alturapokemon2=this.altura;                            
+                            strhtml = strhtml +  '<div style="text-align:center;"><a href="#" class="myButton" onclick="eliminarDetalle2();"><span style="font-size:30px;"class="material-icons">delete</span></a></div>';
+                            document.getElementById("DetallePokemon2").innerHTML= strhtml;
+                        }else{
+                            alert('Ya no hay mas cupos para batalla');
+                        } 
+                    }
+  
+                }else{
+                    alert('Pokemon ya se encuentra seleccionado');
+                }
+                
+                    
+
+                
+ 
+                
+                
+            }
+
+        }
+
+
+        function CargarInformacion(){
+            localStorage.pokemon1='';
+            localStorage.pokemon2='';
+            localStorage.formulario1='';
+            localStorage.formulario2='';
+            localStorage.nombrepokemo1='';
+            localStorage.nombrepokemo2='';
+            localStorage.nombrepokemobase1='';
+            localStorage.nombrepokemobase2='';              
+            localStorage.numpagina = 1;
+            localStorage.offsett = 0;
+            localStorage.ArrNomGanadores = '';
+            localStorage.ArrBatallasGanadas = '';
+            let DataPokemon = new ApiCliente(URL,localStorage.offsett);
+
+        }
+
+
+        function SigPagina(){
+            guardarFormularios();
+            localStorage.numpagina = parseInt(localStorage.numpagina) + 1;
+            localStorage.offsett = parseInt(localStorage.offsett) + 20;
+            let DataPokemon = new ApiCliente(URL,localStorage.offsett);
+           
+        }
+
+        function AntPagina(){
+            guardarFormularios();
+            if (localStorage.numpagina>1){
+                localStorage.numpagina = parseInt(localStorage.numpagina) - 1;
+                localStorage.offsett = parseInt(localStorage.offsett) - 20;
+                let DataPokemon = new ApiCliente(URL,localStorage.offsett);
+            }
+                        
+        }
+
+        function guardarFormularios(){
+            localStorage.formulario1='';
+            localStorage.formulario2='';
+            localStorage.formulario3='';
+            localStorage.formulario1 = document.getElementById("DetallePokemon").innerHTML;
+            localStorage.formulario2 = document.getElementById("DetallePokemon2").innerHTML;
+            localStorage.formulario3 = document.getElementById("victorias").innerHTML;
+        }
+        function mostrarFormularios(){
+            document.getElementById("DetallePokemon").innerHTML = localStorage.formulario1;
+            document.getElementById("DetallePokemon2").innerHTML = localStorage.formulario2;
+            document.getElementById("victorias").innerHTML = localStorage.formulario3 ;
+        }
+
+        function DetallePokemon(urlPokemon){
+
+            let detallePokemon = new ApiCliente(urlPokemon,-1);
+
+        }
+
+        function eliminarDetalle1(){
+            localStorage.pokemon1='';
+            document.getElementById("DetallePokemon").innerHTML ="";
+        }
+        function eliminarDetalle2(){
+            localStorage.pokemon2='';
+            document.getElementById("DetallePokemon2").innerHTML ="";
+        }
+
+
+
+        function Batallar(){
+            
+            if(localStorage.pokemon1!='' && localStorage.pokemon2!='' ){
+                let nombrepokemon,urlimgshine,urlimgnormal;
+                let peso,altura;
+                if(parseInt(localStorage.nombrepokemonbase1) > parseInt(localStorage.nombrepokemonbase2)){
+                    nombrepokemon = 'Ganador: '+localStorage.nombrepokemon1;
+                    urlimgshine = '<img src="'+ localStorage.imgshine1 + '" class="img-pokemon">';
+                    urlimgnormal = localStorage.pokemon1;
+                    peso = localStorage.pesopokemon1;
+                    altura = localStorage.alturapokemon1;
+                    BuscarGanadores(localStorage.nombrepokemon1);
+
+                }
+                if (parseInt(localStorage.nombrepokemonbase1) < parseInt(localStorage.nombrepokemonbase2)){
+                    nombrepokemon = 'Ganador: '+localStorage.nombrepokemon2;
+                    urlimgshine = '<img src="'+ localStorage.imgshine2 + '" class="img-pokemon">';
+                    urlimgnormal = localStorage.pokemon2;
+                    peso = localStorage.pesopokemon2;
+                    altura = localStorage.alturapokemon2;
+                    BuscarGanadores(localStorage.nombrepokemon2);
+                }
+                if (parseInt(localStorage.nombrepokemonbase1) == parseInt(localStorage.nombrepokemonbase2)){
+                    urlimgshine= '<span class="material-icons" style="font-size:50px;">stars</span>';
+                    nombrepokemon = 'Empate';
+                    Peso = 0;
+                    Altura = 0;
+                    BuscarGanadores(localStorage.nombrepokemon1);
+                    BuscarGanadores(localStorage.nombrepokemon2);
+                }
+
+                let strhtml = '';
+                strhtml = strhtml + '<h1>'+ nombrepokemon + '</h>';
+                strhtml = strhtml + '<div style="text-align: center;">'+ urlimgshine + '</div>';
+                strhtml = strhtml + '<p style="font-size:25px;">Peso: '+ peso + '</p>';    
+                strhtml = strhtml + '<p style="font-size:25px;">Altura: '+ altura + '</p>';    
+                strhtml = strhtml + '<a href="#" class="myButton2" onclick="LimpiarArena()" >Nueva Batalla</a>';       
+                document.getElementById("podio").innerHTML = strhtml;    
+                document.getElementById("podio").style.display="block";
+                listarGanadores();
+
+            }else{
+                alert('No estan los oponentes en el campo de batalla!!')
+            }
+        }
+
+        function LimpiarArena(){
+            eliminarDetalle1();
+            eliminarDetalle2();
+            document.getElementById("podio").style.display="none";
+        }
+
+        function BuscarGanadores(nombrePokemon){
+            let sn_existe = false;
+            let contador = 1;
+            let arreglo1 = localStorage.ArrNomGanadores.split(",");
+            let arreglo2 = localStorage.ArrBatallasGanadas.split(",");
+            let Canreg=0;
+
+            if (arreglo1.length>0){
+                /*for (let i=0;i<=arreglo1.length;i++){
+                    if(arreglo1[i]==","){
+                        Canreg = arreglo1.length-1;
+                        break;
+                    }
+                   
+                }; */              
+                    /*if (Canreg!=0){*/
+                    for (let i=0;i<=arreglo1.length;i++){
+                        if(arreglo1[i]==nombrePokemon){
+                            arreglo2[i] = parseInt(arreglo2[i])+1;
+                            sn_existe=true;
+                        }
+                        contador=i;
+                    };
+                    contador = contador;
+                    if (sn_existe==false){
+                        if (contador>0){
+                            arreglo1[contador] = ","+ nombrePokemon;
+                            arreglo2[contador] = ","+ 1;
+                            localStorage.ArrNomGanadores = arreglo1;
+                            localStorage.ArrBatallasGanadas = arreglo2;
+                        }else{
+                            localStorage.ArrNomGanadores = nombrePokemon;
+                            localStorage.ArrBatallasGanadas = 1;                            
+                        }
+                        
+                    }else{
+                        localStorage.ArrNomGanadores = arreglo1;
+                        localStorage.ArrBatallasGanadas = arreglo2;                        
+                    }
+               /* }else{
+                    if(arreglo1==nombrePokemon){
+                            arreglo2 = parseInt(arreglo2) + 1;
+                            sn_existe=true;
+                        }else{
+                            arreglo1 = arreglo1 + ","+ nombrePokemon;
+                            arreglo2 = arreglo2 +","+ 1;                            
+                        }                    
+                }*/
+
+
+               // localStorage.ArrNomGanadores = arreglo1;
+               // localStorage.ArrBatallasGanadas = arreglo2;
+            }else{
+                localStorage.ArrNomGanadores = nombrePokemon;
+                localStorage.ArrBatallasGanadas = 1;
+            }
+
+        }
+
+
+        function listarGanadores(){
+            let strhtml='';
+            let arreglo1 = localStorage.ArrNomGanadores.split(",");
+            let arreglo2 = localStorage.ArrBatallasGanadas.split(",");
+            let Canreg=0;           
+            //arreglo1 = localStorage.ArrNomGanadores;
+            //arreglo2 = localStorage.ArrBatallasGanadas;            
+            strhtml = strhtml +  '<div><table class="blueTable ">';
+            strhtml = strhtml + '<tr>';
+            strhtml = strhtml + '<th class="fila-tabla">Nombre</th>';
+            strhtml = strhtml + '<th class="fila-tabla">Victorias</th>';
+            strhtml = strhtml + '</tr>';
+                for(let i=0;i<=arreglo1.length;i++){
+                    strhtml = strhtml + '<tr class="fila-tabla"><td>' + arreglo1[i] + '</td><td>'+arreglo2[i] + '</td></tr>';
+                }
+
+            strhtml = strhtml + '</tr></table></div>';
+            document.getElementById("victorias").innerHTML= strhtml;            
+        }
+
+    </script>
+    <!--CSS-->
+    <style>
+        .tabla-victorias{
+            position: absolute;
+            top:480px;
+            left:550px;
+           
+        }        
+        .podio{
+            position: absolute;
+            text-align: center;
+            top:125px;
+            left:550px;
+            width: 500px;
+            height: 400px;
+            background:-webkit-gradient(linear, 80% 20%, 10% 21%, from(#866400), to(#FF4E28));
+            -moz-box-shadow:10px 10px 5px #000000;
+            -webkit-box-shadow:10px 10px 5px #000000;
+            box-shadow:10px 10px 5px #000000;          
+        }
+        .boton-batalla{
+            position: absolute;
+            top:400px;
+            left:690px;
+           
+        }
+        .cuadro-pokemon{
+            width: 200px;
+        }
+        .img-pokemon{
+            width:120px;
+        }
+        .div-derecho {
+            position: absolute;
+            top:130px;
+            left:550px;
+        }
+
+
+        .div-arriba {
+            position: absolute;
+            top:0px;
+            
+        }
+        .div-abajo {
+            position: absolute;
+            top:0px;
+            left:250px;
+            
+        }
+
+        .fila-tabla{
+            text-align: center;
+        }
+        .myButton {
+                box-shadow:inset 0px 1px 0px 0px #bbdaf7;
+                background:linear-gradient(to bottom, #79bbff 5%, #378de5 100%);
+                background-color:#79bbff;
+                border-radius:6px;
+                border:1px solid #84bbf3;
+                display:inline-block;
+                cursor:pointer;
+                color:#ffffff;
+                font-family:Arial;
+                font-size:15px;
+                font-weight:bold;
+                padding:6px 24px;
+                text-decoration:none;
+                text-shadow:0px 1px 0px #528ecc;
+            }
+            .myButton:hover {
+                background:linear-gradient(to bottom, #378de5 5%, #79bbff 100%);
+                background-color:#378de5;
+            }
+            .myButton:active {
+                position:relative;
+                top:1px;
+            }
+            .myButton2 {
+                box-shadow:inset 0px 1px 0px 0px #a4e271;
+                background:linear-gradient(to bottom, #89c403 5%, #77a809 100%);
+                background-color:#89c403;
+                border-radius:6px;
+                border:1px solid #74b807;
+                display:inline-block;
+                cursor:pointer;
+                color:#ffffff;
+                font-family:Arial;
+                font-size:15px;
+                font-weight:bold;
+                padding:6px 24px;
+                text-decoration:none;
+                text-shadow:0px 1px 0px #528009;
+            }
+            .myButton2:hover {
+                background:linear-gradient(to bottom, #77a809 5%, #89c403 100%);
+                background-color:#77a809;
+            }
+            .myButton2:active {
+                position:relative;
+                top:1px;
+            }
+      
+            table.blueTable {
+                text-align: center;
+                border: 1px solid #1C6EA4;
+                background-color: #EEEEEE;
+                width: 500px;
+                text-align: left;
+                border-collapse: collapse;
+                }
+                table.blueTable td, table.blueTable th {
+                border: 1px solid #AAAAAA;
+                padding: 3px 2px;
+                }
+                table.blueTable tbody td {
+                font-size: 13px;
+                }
+                table.blueTable tr:nth-child(even) {
+                background: #D0E4F5;
+                }
+                table.blueTable thead {
+                background: #1C6EA4;
+                background: -moz-linear-gradient(top, #5592bb 0%, #327cad 66%, #1C6EA4 100%);
+                background: -webkit-linear-gradient(top, #5592bb 0%, #327cad 66%, #1C6EA4 100%);
+                background: linear-gradient(to bottom, #5592bb 0%, #327cad 66%, #1C6EA4 100%);
+                border-bottom: 2px solid #444444;
+                }
+                table.blueTable thead th {
+                font-size: 15px;
+                font-weight: bold;
+                color: #FFFFFF;
+                border-left: 2px solid #D0E4F5;
+                }
+                table.blueTable thead th:first-child {
+                border-left: none;
+                }
+
+                table.blueTable tfoot {
+                font-size: 14px;
+                font-weight: bold;
+                color: #FFFFFF;
+                background: #D0E4F5;
+                background: -moz-linear-gradient(top, #dcebf7 0%, #d4e6f6 66%, #D0E4F5 100%);
+                background: -webkit-linear-gradient(top, #dcebf7 0%, #d4e6f6 66%, #D0E4F5 100%);
+                background: linear-gradient(to bottom, #dcebf7 0%, #d4e6f6 66%, #D0E4F5 100%);
+                border-top: 2px solid #444444;
+                }
+                table.blueTable tfoot td {
+                font-size: 14px;
+                }
+                table.blueTable tfoot .links {
+                text-align: right;
+                }
+                table.blueTable tfoot .links a{
+                display: inline-block;
+                background: #1C6EA4;
+                color: #FFFFFF;
+                padding: 2px 8px;
+                border-radius: 5px;
+            }
+
+            .myButton3 {
+                box-shadow:inset 0px 1px 0px 0px #f29c93;
+                background:linear-gradient(to bottom, #fe1a00 5%, #ce0100 100%);
+                background-color:#fe1a00;
+                border-radius:6px;
+                border:1px solid #d83526;
+                display:inline-block;
+                cursor:pointer;
+                color:#ffffff;
+                font-family:Arial;
+                font-size:22px;
+                font-weight:bold;
+                padding:10px 31px;
+                text-decoration:none;
+                text-shadow:0px 1px 0px #b23e35;
+            }
+            .myButton3:hover {
+                background:linear-gradient(to bottom, #ce0100 5%, #fe1a00 100%);
+                background-color:#ce0100;
+            }
+            .myButton3:active {
+                position:relative;
+                top:1px;
+            }
+
+      
+
+
+                    </style>
+</head>
+<body onload="CargarInformacion();">
+    <h1>POKEDEX</h1>
+    <div id="form"></div>
+    <div id="podio" class="podio" style="display:none;"></div>
+</body>
+</html>
